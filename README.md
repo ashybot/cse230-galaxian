@@ -4,7 +4,7 @@ We aim to recreate the Space Invaders arcade game using the Haskell [`brick`](ht
 
 ## Project Goals:
 1. Starting the program should automatically load in the score, amount of lives the player has (3 at start), player-operated spaceship, 4 shield objects, and aliens.
-2. The player spaceship should be able to move horizontally along the bottom of the screen and fire missiles.
+2. The player spaceship is controlled using A/D key to move horizontally along the bottom of the screen and space key to fire missiles.
 3. The aliens should move down the screen in a snake-like way, first moving horizontally across the screen and then downwards towards the player. The aliens may also throw bombs at the player.
 4. When a player's missile collides with an alien, it should destroy it and award the player (level # * 10) points to their score.
 5. If an alien hits the player with a bomb, the player loses a life.
