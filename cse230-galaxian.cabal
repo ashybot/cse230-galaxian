@@ -1,0 +1,12 @@
+cabal-version:      2.4
+name:               brick-galaxian
+version:            0.1.0.0
+
+executable brick-galaxian
+    default-language: Haskell2010
+    ghc-options:      -Wall -threaded
+    main-is:          Main.hs
+    other-modules:    View, Model, Control
+    hs-source-dirs:   src
+    build-depends:    base ^>=4.14.1.0
+                    , brick
