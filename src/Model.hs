@@ -11,6 +11,7 @@ type Coord = V2 Int
 type Playership = Coord
 type Enemy = Coord
 
+
 -- Definition of Game and Level attributes
 data Game = Game
   { lives       :: Int
