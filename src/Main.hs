@@ -4,6 +4,7 @@ module Main
 
 import Model
 import View
+import Control
 import Brick
 import qualified Graphics.Vty as V
 import Control.Monad (forever, void)
@@ -40,9 +41,21 @@ handleEvent (AppEvent Tick)                       = do
                                                         put $ step g
 -- Escape key to exit the game
 handleEvent (VtyEvent (V.EvKey V.KEsc []))        = halt
+handleEvent (VtyEvent (V.EvKey V.KRight []))      = do
+                                                      g <- get
+                                                      put $ move (+ 1) g
+handleEvent (VtyEvent (V.EvKey (V.KChar 'd') [])) = do
+                                                      g <- get
+                                                      put $ move (+ 1) g
+handleEvent (VtyEvent (V.EvKey V.KLeft []))       = do
+                                                      g <- get
+                                                      put $ move (subtract 1) g
+handleEvent (VtyEvent (V.EvKey (V.KChar 'a') [])) = do
+                                                      g <- get
+                                                      put $ move (subtract 1) g                                                                                                                                                                   
 handleEvent _                                     = do
-                                                        g <- get
-                                                        put g
+                                                      g <- get
+                                                      put g
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
