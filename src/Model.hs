@@ -25,6 +25,10 @@ data Level = Level
   , attackFrequency :: Int
   } deriving (Show)
 
+-- Left, Right, Up, Down
+data Direction = L | R | U | D
+  deriving (Show, Eq)
+
 -- | Initialize the game with the default values
 game ::Int -> Int -> Level -> Game
 game s li l = Game
@@ -33,33 +37,49 @@ game s li l = Game
         , score       = s
         , dead        = False
         , playership  = V2 (width `div` 2) 0
-        , enemies     = initEnemy 10 10
+        , enemies     = initEnemy 10 10 L
         }
 
 -- | Enemy
 -- coord: 2D Coordinate of the enemy
 -- edead: Been shot or not
 -- freq : Number of steps to its next shot - specified by game level
+-- direc: Current moving direction
 data Enemy = Enemy 
   { coord :: Coord
   , edead :: Bool
   , freq  :: Int
+  , direc :: Direction
   } deriving (Show, Eq)
 
 -- | Initialize enemies 
 -- n: Number of enemies 
 -- f: Frequency of shooting
-initEnemy:: Int -> Int -> [Enemy]
-initEnemy n f = [Enemy (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (height - 2)) False f | x <- [1..n]]
+initEnemy:: Int -> Int -> Direction -> [Enemy]
+initEnemy n f d = [Enemy (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (height - 2)) False f d | x <- [1..n]]
 
--- enemyCoords :: Int -> [Coord]
--- enemyCoords n = [V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (height - 2) | x <- [1..n]]
+-- TODO: Shoot and being shot.
+updateEnemy :: Game -> [Enemy]
+updateEnemy g@(Game _ _ _ _ _ e) = if null e
+                                      then error "No Enemy!"
+                                      else updateEnemyMove e
 
--- TODO: move enemies: if hit edges change direction and move forward.
-enemyMoves :: Game -> Game
-enemyMoves g@Game { enemies = coords } = if null coords
-                                          then error "No Enemy!"
-                                          else error "Yay"
+updateEnemyMove :: [Enemy] -> [Enemy]
+updateEnemyMove e = do
+                    let le@(Enemy (V2 lx _) _ _ d) = last e
+                    let re@(Enemy (V2 rx _) _ _ _) = head e 
+                    if lx == 0 
+                      then mvEnemies R (mvEnemies D e) 
+                      else if rx == width
+                        then mvEnemies L (mvEnemies D e) 
+                        else mvEnemies d e 
+                    where mvEnemies d = map (moveEnemy d)
+
+-- Move enemy according to directions
+moveEnemy :: Direction -> Enemy -> Enemy
+moveEnemy L (Enemy (V2 x y) e f _) = Enemy (V2 (x-1) y) e f L
+moveEnemy R (Enemy (V2 x y) e f _) = Enemy (V2 (x+1) y) e f R
+moveEnemy D (Enemy (V2 x y) e f d) = Enemy (V2 x (y-1)) e f d
 
 enemyCoords:: Game -> [Coord]
 enemyCoords g = map coord $enemies g
