@@ -7,7 +7,7 @@ import Brick
     AttrMap, AttrName, attrName, withAttr, attrMap
     , vBox, hBox, withBorderStyle, str
     , fg
-    , emptyWidget, padRight, padTop, padAll 
+    , emptyWidget, padRight, padTop, padAll
     , hLimit, (<+>), Padding(..), (<=>)
   )
 import qualified Brick.Widgets.Border as B
@@ -47,11 +47,13 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt
     cellAt c
-      | c == playership g   = PlayershipCell
-      | otherwise               = EmptyCell
+      | c == playership g               = PlayershipCell
+      | c `elem` enemyCoords 10         = EnemyCell
+      | otherwise                       = EmptyCell
 
 drawCell :: Cell -> Widget Name
-drawCell PlayershipCell = withAttr playershipAttr $str " ▄" <=> str "▀▀▀"
+drawCell PlayershipCell = withAttr playershipAttr $str " ▄▓▄ " <=> str "▀▀▓▀▀"
+drawCell EnemyCell = withAttr enemyAttr $str ">▓<"
 drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
 
 -- | Attribute style
@@ -59,11 +61,13 @@ attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [
     (playershipAttr, fg V.green `V.withStyle` V.bold),
+    (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
 -- | Attribute definitions
-gameOverAttr, emptyAttr, playershipAttr :: AttrName
+gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
 gameOverAttr = attrName "gameOver"
 emptyAttr = attrName "emptyAttr"
 playershipAttr = attrName "playershipAttr"
+enemyAttr = attrName "enemyAttr"
