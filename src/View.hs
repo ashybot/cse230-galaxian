@@ -48,7 +48,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
     drawCoord    = drawCell . cellAt
     cellAt c
       | c `elem` playership g         = PlayershipCell
-      | c `elem` enemyCoords 10    = EnemyCell
+      | c `elem` enemyCoords g        = EnemyCell
       | otherwise                     = EmptyCell
 
 drawCell :: Cell -> Widget Name
