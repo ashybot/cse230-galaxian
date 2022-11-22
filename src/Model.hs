@@ -10,7 +10,7 @@ data Tick = Tick
 -- Definition of types of cells in the game
 data Cell = EmptyCell | PlayershipCell
 type Coord = V2 Int
-type Playership = Seq Coord
+type Playership = Coord
 
 -- Definition of Game and Level attributes
 data Game = Game
@@ -33,7 +33,7 @@ game s li l = Game
         , level       = l
         , score       = s
         , dead        = False
-        , playership  = S.singleton (V2 (width `div` 2) 0)
+        , playership  = V2 (width `div` 2) 0
         }
 
 initGame :: IO Game
