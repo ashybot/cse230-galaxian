@@ -1,8 +1,6 @@
 
 module Model where
 import Linear.V2 (V2(..))
-import Data.Sequence (Seq(..))
-import qualified Data.Sequence as S
 
 type Name = ()
 data Tick = Tick
@@ -10,8 +8,8 @@ data Tick = Tick
 -- Definition of types of cells in the game
 data Cell = EmptyCell | PlayershipCell | EnemyCell
 type Coord = V2 Int
-type Playership = Seq Coord
-type Enemy = Seq Coord
+type Playership = Coord
+type Enemy = Coord
 
 -- Definition of Game and Level attributes
 data Game = Game
@@ -35,9 +33,10 @@ game s li l = Game
         , level       = l
         , score       = s
         , dead        = False
-        , playership  = S.singleton (V2 (width `div` 2) 0)
-        , enemies = map S.singleton (enemyCoords 10)
+        , playership  = V2 (width `div` 2) 0
+        , enemies     = enemyCoords 10
         }
+        
 enemyCoords :: Int -> [Coord]
 enemyCoords n = [V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (height - 2) | x <- [1..n]]
 
