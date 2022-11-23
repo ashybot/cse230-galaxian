@@ -112,13 +112,14 @@ pickNewAttackEnemy es@(Enemies el f op ae)
 updateAttackMove :: Int -> Enemies -> Enemies
 updateAttackMove px es@(Enemies el f op ae)
   = do 
-    -- put back attack enemy that arrives original patch
+    -- put back returning attack enemy that arrives original patch
     let idx = tryGetAttackEnemyByY ae 0 (enemyHeight+1)  
     let (Enemies el' _ op' ae') = putBackAttackEnemy idx es
+    -- update movement
     Enemies el' f op' (map (horizontalMove . moveEnemy D) ae')
     where 
       horizontalMove e@(E (V2 ex ey) _ _) = do 
-        -- on the way back to original position
+        -- on the way returning to original position
         if ey-1 > enemyHeight
           then moveEnemy D e 
             -- on the way attacking player
@@ -153,7 +154,7 @@ removeEnemy :: Int -> [Enemy] -> [Enemy]
 removeEnemy idx el = lhs ++ rhs
   where (lhs, _ :rhs) = splitAt idx el
 
--- Return the finished enemies back to original position
+-- Return the bottom-reached enemy back to the top
 returnFinishedAttack :: Enemies -> Enemies
 returnFinishedAttack es@(Enemies el f op ae)
   = do
