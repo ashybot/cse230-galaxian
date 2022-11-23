@@ -88,8 +88,8 @@ updateEnemy (Game _ (Level _ af) _ _ (V2 px _) es@(Enemies el f op ae)) = if nul
                                           else do 
                                             let f'  = updateFrequency f af
                                             -- update patched positions 
-                                            let op' = updateEnemyMove op el
-                                            let el' = updateEnemyMove el el
+                                            let op' = updateEnemyMove op (el++op)
+                                            let el' = updateEnemyMove el (el++op)
                                             -- pick new attack enemy
                                             let es' = pickNewAttackEnemy (Enemies el' f' op' ae)
                                             -- attack enemy moves
@@ -100,7 +100,7 @@ updateEnemy (Game _ (Level _ af) _ _ (V2 px _) es@(Enemies el f op ae)) = if nul
 -- Pick new attack enemy
 pickNewAttackEnemy :: Enemies -> Enemies
 pickNewAttackEnemy es@(Enemies el f op ae)
-  | f /= 0    = es
+  | f /= 0 || null el = es
   | otherwise = do 
       let e_ = head el
       let el'= tail el
@@ -186,7 +186,7 @@ initGame = do
             return $game 0 3 l
 
 getLevel :: Int -> Level
-getLevel n = Level {levelNumber = n, attackFrequency = 50 - 10*n}
+getLevel n = Level {levelNumber = n, attackFrequency = 100 - 10*n}
 
 -- Initialize screen size
 height, width :: Int
