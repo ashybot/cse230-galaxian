@@ -52,6 +52,12 @@ data Enemy = Enemy
   , direc :: Direction
   } deriving (Show, Eq)
 
+instance Ord Enemy where 
+  (< ) (Enemy c1 _ _ _) (Enemy c2 _ _ _) = c1 <  c2 
+  (<=) (Enemy c1 _ _ _) (Enemy c2 _ _ _) = c1 <= c2 
+  (> ) (Enemy c1 _ _ _) (Enemy c2 _ _ _) = c1 >  c2 
+  (>=) (Enemy c1 _ _ _) (Enemy c2 _ _ _) = c1 >= c2 
+
 -- | Initialize enemies 
 -- n: Number of enemies 
 -- f: Frequency of shooting
@@ -60,17 +66,18 @@ initEnemy n f d = [Enemy (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (heig
 
 -- TODO: Shoot and being shot.
 updateEnemy :: Game -> [Enemy]
-updateEnemy g@(Game _ _ _ _ _ e) = if null e
-                                      then error "No Enemy!"
-                                      else updateEnemyMove e
+updateEnemy (Game _ _ _ _ _ e) = if null e
+                                then error "No Enemy!"
+                                else updateEnemyMove e
 
 updateEnemyMove :: [Enemy] -> [Enemy]
 updateEnemyMove e = do
-                    let le@(Enemy (V2 lx _) _ _ d) = last e
-                    let re@(Enemy (V2 rx _) _ _ _) = head e 
-                    if lx == 0 
+                    let (Enemy (V2 lx _) _ _ _) = minimum e
+                    let (Enemy (V2 rx _) _ _ _) = maximum e
+                    let       Enemy _ _ _ d = head e
+                    if lx == 1
                       then mvEnemies R (mvEnemies D e) 
-                      else if rx == width
+                      else if rx == width-1
                         then mvEnemies L (mvEnemies D e) 
                         else mvEnemies d e 
                     where mvEnemies d = map (moveEnemy d)
@@ -80,6 +87,7 @@ moveEnemy :: Direction -> Enemy -> Enemy
 moveEnemy L (Enemy (V2 x y) e f _) = Enemy (V2 (x-1) y) e f L
 moveEnemy R (Enemy (V2 x y) e f _) = Enemy (V2 (x+1) y) e f R
 moveEnemy D (Enemy (V2 x y) e f d) = Enemy (V2 x (y-1)) e f d
+moveEnemy U (Enemy (V2 x y) e f d) = Enemy (V2 x (y+1)) e f d
 
 enemyCoords:: Game -> [Coord]
 enemyCoords g = map coord $enemies g
