@@ -52,13 +52,18 @@ handleEvent (VtyEvent (V.EvKey V.KLeft []))       = do
                                                       put $ move (subtract 1) g
 handleEvent (VtyEvent (V.EvKey (V.KChar 'a') [])) = do
                                                       g <- get
-                                                      put $ move (subtract 1) g                                                                                                                                                                   
+                                                      put $ move (subtract 1) g   
+-- handleEvent g (VtyEvent (V.EvKey (V.KChar ' ') [])) = continue $ shoot g  
+handleEvent (VtyEvent (V.EvKey (V.KChar ' ') [])) = do
+                                                      g <- get 
+                                                      put $ shoot g                                                                                                                                                                
 handleEvent _                                     = do
                                                       g <- get
                                                       put g
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p e) = do
+step g@(Game li l s d p sh e) = do
   let eNew = updateEnemy g -- update aliens
-  Game li l s d p eNew
+  let shotsNew = updateShots g
+  Game li l s d p shotsNew eNew

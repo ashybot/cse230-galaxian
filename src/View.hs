@@ -49,25 +49,42 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellAt c
       | c == playership g               = PlayershipCell
       | c `elem` enemyCoords g          = EnemyCell
+      | c `elem` shots g                = ShotCell
       | otherwise                       = EmptyCell
+
+-- -- | Draw the diffrent cells at the coordinate of the canvas
+-- cellAt :: Game -> Coord -> Cell
+-- cellAt g c
+--       | c == canon g               = CanonCell
+--       | c `elem` shots g           = ShotCell
+--       | c `elem` alienShots g      = AlienShotCell
+--       | c `elem` alientLocations g = AlienCell
+--       | c `elem` ufoLocations g    = UfoCell
+--       | c `elem` blockerLocations g 3 = BlockerCell0
+--       | c `elem` blockerLocations g 2 = BlockerCell1
+--       | c `elem` blockerLocations g 1 = BlockerCell2
+--       | otherwise                  = EmptyCell
 
 drawCell :: Cell -> Widget Name
 drawCell PlayershipCell = withAttr playershipAttr $str " ▄▓▄ " <=> str "▀▀▓▀▀"
 drawCell EnemyCell = withAttr enemyAttr $str ">▓<"
 drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
+drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
 
 -- | Attribute style
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [
+    (shotAttr, fg V.red `V.withStyle` V.bold),
     (playershipAttr, fg V.green `V.withStyle` V.bold),
     (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
 -- | Attribute definitions
-gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
+shotAttr, gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
 gameOverAttr = attrName "gameOver"
 emptyAttr = attrName "emptyAttr"
 playershipAttr = attrName "playershipAttr"
 enemyAttr = attrName "enemyAttr"
+shotAttr  = attrName "shotAttr"

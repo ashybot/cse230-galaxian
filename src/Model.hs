@@ -6,7 +6,7 @@ type Name = ()
 data Tick = Tick
 
 -- Definition of types of cells in the game
-data Cell = EmptyCell | PlayershipCell | EnemyCell
+data Cell = EmptyCell | PlayershipCell | EnemyCell | ShotCell
 type Coord = V2 Int
 type Playership = Coord
 
@@ -17,12 +17,14 @@ data Game = Game
   , score       :: Int
   , dead        :: Bool
   , playership  :: Playership
+  , shots       :: [Coord] -- shots of player
   , enemies     :: [Enemy]
   } deriving (Show)
 
 data Level = Level
   { levelNumber :: Int
   , attackFrequency :: Int
+  , lShots  :: Int
   } deriving (Show)
 
 -- Left, Right, Up, Down
@@ -37,6 +39,7 @@ game s li l = Game
         , score       = s
         , dead        = False
         , playership  = V2 (width `div` 2) 0
+        , shots       = []
         , enemies     = initEnemy 10 10 L
         }
 
@@ -66,7 +69,7 @@ initEnemy n f d = [Enemy (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) (heig
 
 -- TODO: Shoot and being shot.
 updateEnemy :: Game -> [Enemy]
-updateEnemy (Game _ _ _ _ _ e) = if null e
+updateEnemy (Game _ _ _ _ _ _ e) = if null e
                                 then error "No Enemy!"
                                 else updateEnemyMove e
 
@@ -92,13 +95,17 @@ moveEnemy U (Enemy (V2 x y) e f d) = Enemy (V2 x (y+1)) e f d
 enemyCoords:: Game -> [Coord]
 enemyCoords g = map coord $enemies g
 
+updateShots :: Game -> [Coord]
+updateShots (Game _ _ _ _ _ s _) = map (\(V2 x y) -> (V2 x (y+1))) s
+
+
 initGame :: IO Game
 initGame = do
             let l = getLevel 0
             return $game 0 3 l
 
 getLevel :: Int -> Level
-getLevel n = Level {levelNumber = n, attackFrequency = 2*n}
+getLevel n = Level {levelNumber = n, attackFrequency = 2*n, lShots = 100000}
 
 -- Initialize screen size
 height, width :: Int
