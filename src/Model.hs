@@ -79,10 +79,10 @@ updateEnemyMove e = do
                     let (Enemy (V2 rx _) _ _ _) = maximum e
                     let       Enemy _ _ _ d = head e
                     if lx == 1
-                      then mvEnemies R (mvEnemies D e) 
-                      else if rx == width-1
-                        then mvEnemies L (mvEnemies D e) 
-                        else mvEnemies d e 
+                      then mvEnemies R e 
+                    else if rx == width-1
+                      then mvEnemies L e
+                      else mvEnemies d e 
                     where mvEnemies d = map (moveEnemy d)
 
 -- Move enemy according to directions
