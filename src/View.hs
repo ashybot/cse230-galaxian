@@ -75,7 +75,7 @@ drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [
-    (shotAttr, fg V.red `V.withStyle` V.bold),
+    (shotAttr, fg V.blue `V.withStyle` V.bold),
     (playershipAttr, fg V.green `V.withStyle` V.bold),
     (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
