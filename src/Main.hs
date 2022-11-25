@@ -65,9 +65,25 @@ handleEvent _                                     = do
 step :: Game -> Game
 step g@(Game li l s d p sh e) = do
   let shotsNew = updateShots g -- update Shots, 
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-    
-  -- let eNew = updateEnemy g -- update aliens
-  let eNew = updateEnemy g shotsNew -- update aliens
+  -- Game li l s d p shotsNew e
 
-  Game li l s d p shotsNew eNew
+  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
+
+  -- let eNew = updateEnemy g shotsNew -- update aliens
+
+  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
+  -- let tmp_ = handleShots (Game li l s d p sh eNew) shotsNew -- handle out of bound shots
+
+    
+  let eNew = updateEnemy g -- update aliens
+  let eNew' = updateEnemyAfterShots eNew shotsNew
+  -- let eNew = updateEnemy g shotsNew -- update aliens
+
+  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
+  let tmp_ = handleShots (Game li l s d p sh eNew) shotsNew -- handle out of bound shots
+
+
+  -- Game li l s d p shotsNew eNew'
+  -- Game li l s d p tmp_ eNew
+  Game li l s d p tmp_ eNew'
+
