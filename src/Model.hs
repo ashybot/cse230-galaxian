@@ -1,7 +1,6 @@
 
 module Model where
 import Linear.V2 (V2(..))
-import Data.Bool (Bool(True))
 
 type Name = ()
 data Tick = Tick
@@ -89,7 +88,7 @@ setAttackFrequency = (100-)
 -- updateEnemy :: Game -> Enemies
 updateEnemy :: Game -> Enemies
 -- updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
-updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
+updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae)) = if null (el++ae)
 
                                           then error "No Enemy!"
                                           else do 
@@ -114,7 +113,7 @@ updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if
 
                                             -- returnFinishedAttack es'''
 updateEnemyAfterShots :: Enemies -> [Coord] -> Enemies
-updateEnemyAfterShots es@(Enemies el f op ae) shotsNew = if null (el++ae)
+updateEnemyAfterShots es@(Enemies el _ _ ae) shotsNew = if null (el++ae)
                                     then error "No Enemy!"
                                     else do 
                                       let el_ = moveAndKill (enemyList es) shotsNew
@@ -159,7 +158,7 @@ pickNewAttackEnemy es@(Enemies el f op ae)
 
 -- Attack enemies move
 updateAttackMove :: Int -> Enemies -> Enemies
-updateAttackMove px es@(Enemies el f op ae)
+updateAttackMove px es@(Enemies _ f _ ae)
   = do 
     -- put back returning attack enemy that arrives original patch
     let idx = tryGetAttackEnemyByY ae 0 (enemyHeight+1)  
@@ -192,7 +191,7 @@ putBackAttackEnemy idx es@(Enemies el f op ae)
 -- Return the index of attack enemy at the bottom else -1
 tryGetAttackEnemyByY :: [Enemy] -> Int -> Int -> Int
 tryGetAttackEnemyByY [] _ _ = -1
-tryGetAttackEnemyByY (a@(E (V2 _ y) _ _): as) idx y_val
+tryGetAttackEnemyByY ((E (V2 _ y) _ _): as) idx y_val
   = do
     if y == y_val
       then idx
@@ -211,7 +210,7 @@ returnFinishedAttack es@(Enemies el f op ae)
     if idx == -1 
       then es
       else do 
-        let (E (V2 x y) e d) = ae!!idx
+        let (E (V2 x _) e d) = ae!!idx
         let ae' = E (V2 x height) e d:ae
         Enemies el f op ae'
 
@@ -272,19 +271,19 @@ updateShots :: Game -> [Coord]
 updateShots (Game _ _ _ _ _ s _) = map (\(V2 x y) -> (V2 x (y+1))) s
 
 getCoord :: Enemy -> Coord
-getCoord (E c e d) = c
+getCoord (E c _ _) = c
 
 getCoord2 :: Enemy -> Coord
-getCoord2 (E (V2 x y) e d) = V2 x (y+1)
+getCoord2 (E (V2 x y) _ _) = V2 x (y+1)
 
 getCoord3 :: Enemy -> Coord
-getCoord3 (E (V2 x y) e d) = V2 x (y-1)
+getCoord3 (E (V2 x y) _ _) = V2 x (y-1)
 
 getEnemyLocationList :: Game -> [Coord]
-getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el cd op ae)) = map getCoord el
+getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el _ _ _)) = map getCoord el
 
 getAEnemyLocationList :: Game -> [Coord]
-getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies el cd op ae)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
+getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies _  _ _ ae)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
 
 -- Enemies {
 --     enemyList :: [Enemy]

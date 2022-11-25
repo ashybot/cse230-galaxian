@@ -63,7 +63,7 @@ handleEvent _                                     = do
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh e) = do
+step g@(Game li l s d p sh _) = do
   let shotsNew = updateShots g -- update Shots, 
   -- Game li l s d p shotsNew e
 

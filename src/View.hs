@@ -8,7 +8,7 @@ import Brick
     , vBox, hBox, withBorderStyle, str
     , fg
     , emptyWidget, padRight, padTop, padAll
-    , hLimit, (<+>), Padding(..), (<=>)
+    , hLimit, (<+>), Padding(..), (<=>), (<+>)
   )
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.Border.Style as BS
@@ -22,15 +22,15 @@ drawUI g =
   [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
 
 drawStats :: Game -> Widget Name
-drawStats g = hLimit 11
-  $ vBox [drawScore $score g,  padTop (Pad 2) $ drawGameOver (dead g)]
+drawStats g = hLimit 14
+  $ vBox [(drawScore $score g) g,  padTop (Pad 2) $ drawGameOver (dead g)]
 
-drawScore :: Int -> Widget Name
-drawScore n = withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str "Score")
+drawScore :: Int -> Game -> Widget Name
+drawScore n g = withBorderStyle BS.unicodeBold
+  $ B.borderWithLabel (str ("Level " ++ show (levelNumber (level g))))
   $ C.hCenter
   $ padAll 1
-  $ str $ show n
+  $ (str "Score: " <+> str (show n)) <=> (str "Lives: " <+> str (show (lives g)))
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver isDead =
@@ -52,30 +52,17 @@ drawGrid g = withBorderStyle BS.unicodeBold
       | c `elem` shots g                = ShotCell
       | otherwise                       = EmptyCell
 
--- -- | Draw the diffrent cells at the coordinate of the canvas
--- cellAt :: Game -> Coord -> Cell
--- cellAt g c
---       | c == canon g               = CanonCell
---       | c `elem` shots g           = ShotCell
---       | c `elem` alienShots g      = AlienShotCell
---       | c `elem` alientLocations g = AlienCell
---       | c `elem` ufoLocations g    = UfoCell
---       | c `elem` blockerLocations g 3 = BlockerCell0
---       | c `elem` blockerLocations g 2 = BlockerCell1
---       | c `elem` blockerLocations g 1 = BlockerCell2
---       | otherwise                  = EmptyCell
-
 drawCell :: Cell -> Widget Name
 drawCell PlayershipCell = withAttr playershipAttr $str " ▄▓▄ " <=> str "▀▀▓▀▀"
 drawCell EnemyCell = withAttr enemyAttr $str ">▓<"
 drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
-drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
+drawCell ShotCell       = withAttr shotAttr $str " ║ "
 
 -- | Attribute style
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [
-    (shotAttr, fg V.blue `V.withStyle` V.bold),
+    (shotAttr, fg V.yellow `V.withStyle` V.bold),
     (playershipAttr, fg V.green `V.withStyle` V.bold),
     (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
