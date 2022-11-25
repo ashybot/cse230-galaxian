@@ -1,6 +1,7 @@
 
 module Model where
 import Linear.V2 (V2(..))
+import Data.Bool (Bool(True))
 
 type Name = ()
 data Tick = Tick
@@ -85,10 +86,17 @@ setAttackFrequency = (100-)
 
 -- TODO: 1. Shoot and being shot.
 --       2. Attack frequently
+-- updateEnemy :: Game -> Enemies
 updateEnemy :: Game -> Enemies
+-- updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
 updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
+
                                           then error "No Enemy!"
                                           else do 
+                                            
+                                            -- let el_ = moveAndKill el shotsNew
+
+
                                             let f'  = updateFrequency f af
                                             -- update patched positions 
                                             let op' = updateEnemyMove op (el++op)
@@ -99,6 +107,44 @@ updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if
                                             let es''= updateAttackMove px es' 
                                             -- return finished enemy
                                             returnFinishedAttack es''
+                                            -- let el_ = moveAndKill (enemyList es'') shotsNew
+                                            -- let ae_ = moveAndKill (attackEnemy es'') shotsNew
+
+                                            -- let es''' = Enemies el_ (countdown es'') (origPosition es'') ae_
+
+                                            -- returnFinishedAttack es'''
+updateEnemyAfterShots :: Enemies -> [Coord] -> Enemies
+updateEnemyAfterShots es@(Enemies el f op ae) shotsNew = if null (el++ae)
+                                    then error "No Enemy!"
+                                    else do 
+                                      let el_ = moveAndKill (enemyList es) shotsNew
+                                      -- let ae_ = moveAndKill (attackEnemy es) shotsNew
+                                      let ae_ = moveAndKill2 (attackEnemy es) shotsNew
+
+
+                                      let es' = Enemies el_ (countdown es) (origPosition es) ae_
+                                      es'
+
+
+-- coord :: Coord
+--     , edead :: Bool
+--     , direc :: Direction
+moveAndKill :: [Enemy] -> [Coord] -> [Enemy]
+-- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
+moveAndKill a s = [x | x <- a', True /= edead x] -- remove dead aliens 
+      where a' = map (\(E coord edead dir) -> if coord `elem` s then (E coord True dir) else (E coord edead dir)) a  -- check for hits
+
+
+getC :: [Coord] -> [Coord]
+getC c = c ++ (map(\(V2 x y) -> (V2 x (y+1))) c) ++ (map(\(V2 x y) -> (V2 x (y-1))) c)
+
+moveAndKill2 :: [Enemy] -> [Coord] -> [Enemy]
+-- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
+moveAndKill2 a s = [x | x <- a', True /= edead x] -- remove dead aliens 
+      where a' = map (\(E coord edead dir) -> if coord `elem` (getC s) then (E coord True dir) else (E coord edead dir)) a  -- check for hits
+              
+
+      -- where a' = map (\(E (V2 x_ y_) edead dir) -> if (V2 x_ (y)) `elem` s then (E (V2 x_ y_) True dir) else (E (V2 x_ y_) edead dir)) a  -- check for hits
 
 -- Pick new attack enemy
 pickNewAttackEnemy :: Enemies -> Enemies
@@ -201,8 +247,69 @@ moveEnemy U (E (V2 x y) e d) = E (V2 x (y+1)) e d
 enemyCoords:: Game -> [Coord]
 enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae)) = map coord (el++ae)
 
+-------------------------------------------------------------------------------------------------------------------------------------
+-- -- TODO handle shots
+-- handleShots :: Game ->  [Coord] -> [Coord]
+-- handleShots g s =  do
+--       let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` allBlockerLocations g || x `elem` ufoLocations g)] -- remove shots which hit
+--       [x | x <- s1, x ^._y <= height] -- remove shots which are out
+
+
+-- -- | Remove dead aliens and trigger alien movement
+-- handleAliens :: Game -> [Coord] -> [Alien]
+-- handleAliens g s = do
+--       let a = moveAndKill (aliens g) s
+--       if count g > 0 then a
+--       else do
+--             let a' = map (moveAlien (alienDir g)) a -- moove aliens
+--             moveAndKill a' s -- check for hits again after mooving aliens
+      
+-- moveAndKill :: [Alien] -> [Coord] -> [Alien]
+-- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
+--       where a' = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a  -- check for hits
+-------------------------------------------------------------------------------------------------------------------------------------
 updateShots :: Game -> [Coord]
 updateShots (Game _ _ _ _ _ s _) = map (\(V2 x y) -> (V2 x (y+1))) s
+
+getCoord :: Enemy -> Coord
+getCoord (E c e d) = c
+
+getCoord2 :: Enemy -> Coord
+getCoord2 (E (V2 x y) e d) = V2 x (y+1)
+
+getCoord3 :: Enemy -> Coord
+getCoord3 (E (V2 x y) e d) = V2 x (y-1)
+
+getEnemyLocationList :: Game -> [Coord]
+getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el cd op ae)) = map getCoord el
+
+getAEnemyLocationList :: Game -> [Coord]
+getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies el cd op ae)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
+
+-- Enemies {
+--     enemyList :: [Enemy]
+--   , countdown :: Int
+--   , origPosition :: [Enemy]
+--   , attackEnemy  :: [Enemy]
+
+-- data Enemy
+--   = E 
+--     { coord :: Coord
+--     , edead :: Bool
+--     , direc :: Direction
+--     } 
+--   deriving (Show, Eq)
+
+
+handleShots :: Game ->  [Coord] -> [Coord]
+handleShots g s =  do
+      -- let s1 = [x | x <- s, not (x `elem` getEnemyLocationList g || x `elem` allBlockerLocations g || x `elem` ufoLocations g)] -- remove shots which hit
+      -- let s1 = [x | x <- s, not (x `elem` getEnemyLocationList g)] -- remove shots which hit
+      let s1 = [x | x <- s, not (x `elem` getEnemyLocationList g) && not (x `elem` getAEnemyLocationList g)] -- remove shots which hit
+
+      -- [x | x <- s1, x ^._y <= height] -- remove shots which are out
+      [(V2 x y) | (V2 x y)  <- s1, y <= height] -- remove shots which are out
+
 
 
 initGame :: IO Game
