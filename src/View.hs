@@ -49,29 +49,32 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellAt c
       | c == playership g               = PlayershipCell
       | c `elem` enemyCoords g          = EnemyCell
-      | c `elem` playerShots g                = ShotCell
+      | c `elem` playerShots g          = PlayerShotCell
       | otherwise                       = EmptyCell
 
 drawCell :: Cell -> Widget Name
 drawCell PlayershipCell = withAttr playershipAttr $str " ▄▓▄ " <=> str "▀▀▓▀▀"
 drawCell EnemyCell = withAttr enemyAttr $str ">▓<"
-drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
-drawCell ShotCell       = withAttr shotAttr $str " ║ "
+drawCell EmptyCell = withAttr emptyAttr $str "   " <=> str "   "
+drawCell PlayerShotCell = withAttr playerShotAttr $str " ║ "
+drawCell EnemyShotCell  = withAttr enemyShotAttr $str " ║ "
 
 -- | Attribute style
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [
-    (shotAttr, fg V.yellow `V.withStyle` V.bold),
-    (playershipAttr, fg V.green `V.withStyle` V.bold),
+    (playerShotAttr, fg V.yellow  `V.withStyle` V.bold),
+    (playershipAttr, fg V.green   `V.withStyle` V.bold),
+    (enemyShotAttr,  fg V.magenta `V.withStyle` V.bold),
     (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
 -- | Attribute definitions
-shotAttr, gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
+enemyShotAttr, playerShotAttr, gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
 gameOverAttr = attrName "gameOver"
 emptyAttr = attrName "emptyAttr"
 playershipAttr = attrName "playershipAttr"
 enemyAttr = attrName "enemyAttr"
-shotAttr  = attrName "shotAttr"
+playerShotAttr  = attrName "playerShotAttr"
+enemyShotAttr   = attrName "enemyShotAttr"

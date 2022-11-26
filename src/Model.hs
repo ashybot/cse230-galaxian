@@ -6,7 +6,7 @@ type Name = ()
 data Tick = Tick
 
 -- Definition of types of cells in the game
-data Cell = EmptyCell | PlayershipCell | EnemyCell | ShotCell
+data Cell = EmptyCell | PlayershipCell | EnemyCell | PlayerShotCell | EnemyShotCell
 type Coord = V2 Int
 type Playership = Coord
 
@@ -271,8 +271,11 @@ enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _) _ ) = map coord (el++ae)
 -- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
 --       where a' = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a  -- check for hits
 -------------------------------------------------------------------------------------------------------------------------------------
-updateShots :: Game -> [Coord]
-updateShots (Game _ _ _ _ _ s _ _) = map (\(V2 x y) -> (V2 x (y+1))) s
+updateShots :: Game -> Direction -> [Coord]
+updateShots (Game _ _ _ _ _ s _ _) U = map (\(V2 x y) -> (V2 x (y+1))) s
+updateShots (Game _ _ _ _ _ s _ _) D = map (\(V2 x y) -> (V2 x (y-1))) s
+updateShots (Game _ _ _ _ _ s _ _) L = map (\(V2 x y) -> (V2 (x-1) y)) s
+updateShots (Game _ _ _ _ _ s _ _) R = map (\(V2 x y) -> (V2 (x+1) y)) s
 
 getCoord :: Enemy -> Coord
 getCoord (E c _ _) = c
