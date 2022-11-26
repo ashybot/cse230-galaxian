@@ -12,14 +12,14 @@ type Playership = Coord
 
 -- Definition of Game and Level attributes
 data Game = Game
-  { lives        :: Int
-  , level        :: Level
-  , score        :: Int
-  , dead         :: Bool
-  , playership   :: Playership
-  , playerShots  :: [Coord] -- shots of player
-  , enemies      :: Enemies
-  -- , enemiesShots :: [Coord] -- shots of enemies
+  { lives       :: Int
+  , level       :: Level
+  , score       :: Int
+  , dead        :: Bool
+  , playership  :: Playership
+  , playerShots :: [Coord] -- shots of player
+  , enemies     :: Enemies
+  , enemiesShots:: [Coord]
   } deriving (Show)
 
 data Level = Level
@@ -35,13 +35,14 @@ data Direction = L | R | U | D
 -- | Initialize the game with the default values
 game ::Int -> Int -> Level -> Game
 game s li l@(Level _ af sf) = Game
-        { lives       = li
-        , level       = l
-        , score       = s
-        , dead        = False
-        , playership  = V2 (width `div` 2) 0
-        , playerShots = []
-        , enemies     = initEnemies 10 af L sf
+        { lives        = li
+        , level        = l
+        , score        = s
+        , dead         = False
+        , playership   = V2 (width `div` 2) 0
+        , playerShots        = []
+        , enemies      = initEnemies 10 af L sf
+        , enemiesShots = []
         }
 
 -- countdown   : Steps to the next attack - specified by game level
@@ -53,7 +54,7 @@ data Enemies = Enemies {
   , countdown :: Int
   , origPosition :: [Enemy]
   , attackEnemy  :: [Enemy]
-  , shotFreq  :: Int
+  , attackFreq   :: Int
 } deriving (Show, Eq)
 
 -- | Enemy
@@ -79,7 +80,7 @@ instance Ord Enemy where
 -- f: Countdown of next shooting with default set to game$level$attackFrequency
 -- d: Direction
 initEnemies:: Int -> Int -> Direction -> Int -> Enemies
-initEnemies n af d = Enemies (initEnemyList n d) af [] []
+initEnemies n f d sf = Enemies (initEnemyList n d) f [] [] sf
 initEnemyList:: Int -> Direction -> [Enemy]
 initEnemyList n d = [E (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) enemyHeight) False d | x <- [1..n]]
 
@@ -91,7 +92,7 @@ setAttackFrequency = (100-)
 -- updateEnemy :: Game -> Enemies
 updateEnemy :: Game -> Enemies
 -- updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
-updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae sf)) = if null (el++ae)
+updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae sf) _) = if null (el++ae)
 
                                           then error "No Enemy!"
                                           else do 
@@ -161,7 +162,7 @@ pickNewAttackEnemy es@(Enemies el f op ae sf)
 
 -- Attack enemies move
 updateAttackMove :: Int -> Enemies -> Enemies
-updateAttackMove px es@(Enemies _ f _ ae sf )
+updateAttackMove px es@(Enemies _ f _ ae sf)
   = do 
     -- put back returning attack enemy that arrives original patch
     let idx = tryGetAttackEnemyByY ae 0 (enemyHeight+1)  
@@ -247,7 +248,7 @@ moveEnemy D (E (V2 x y) e d) = E (V2 x (y-1)) e d
 moveEnemy U (E (V2 x y) e d) = E (V2 x (y+1)) e d
 
 enemyCoords:: Game -> [Coord]
-enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _)) = map coord (el++ae)
+enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _) _ ) = map coord (el++ae)
 
 -------------------------------------------------------------------------------------------------------------------------------------
 -- -- TODO handle shots
@@ -270,11 +271,8 @@ enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _)) = map coord (el++ae)
 -- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
 --       where a' = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a  -- check for hits
 -------------------------------------------------------------------------------------------------------------------------------------
-updateShots :: Game -> Direction -> [Coord]
-updateShots (Game _ _ _ _ _ s _) U = map (\(V2 x y) -> V2 x (y+1)) s
-updateShots (Game _ _ _ _ _ s _) D = map (\(V2 x y) -> V2 x (y-1)) s
-updateShots (Game _ _ _ _ _ s _) L = map (\(V2 x y) -> V2 (x-1) y) s
-updateShots (Game _ _ _ _ _ s _) R = map (\(V2 x y) -> V2 (x+1) y) s
+updateShots :: Game -> [Coord]
+updateShots (Game _ _ _ _ _ s _ _) = map (\(V2 x y) -> (V2 x (y+1))) s
 
 getCoord :: Enemy -> Coord
 getCoord (E c _ _) = c
@@ -286,10 +284,10 @@ getCoord3 :: Enemy -> Coord
 getCoord3 (E (V2 x y) _ _) = V2 x (y-1)
 
 getEnemyLocationList :: Game -> [Coord]
-getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el _ _ _ _)) = map getCoord el
+getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el _ _ _ _) _ ) = map getCoord el
 
 getAEnemyLocationList :: Game -> [Coord]
-getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies _  _ _ ae _)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
+getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies _  _ _ ae _) _ ) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
 
 -- Enemies {
 --     enemyList :: [Enemy]
