@@ -63,7 +63,7 @@ handleEvent _                                     = do
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _) = do
+step g@(Game li l s d p sh _ esh) = do
   let shotsNew = updateShots g -- update Shots, 
   -- Game li l s d p shotsNew e
 
@@ -80,10 +80,10 @@ step g@(Game li l s d p sh _) = do
   -- let eNew = updateEnemy g shotsNew -- update aliens
 
   -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-  let tmp_ = handleShots (Game li l s d p sh eNew) shotsNew -- handle out of bound shots
+  let tmp_ = handleShots (Game li l s d p sh eNew esh) shotsNew -- handle out of bound shots
 
 
   -- Game li l s d p shotsNew eNew'
   -- Game li l s d p tmp_ eNew
-  Game li l s d p tmp_ eNew'
+  Game li l s d p tmp_ eNew' esh
 
