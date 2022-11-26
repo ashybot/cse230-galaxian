@@ -22,3 +22,13 @@ shoot g = if dead g || length s >= lShots l || (curstep g) < 8 then g
     where s = playerShots g
           n = fmap (\(V2 x y)  -> V2 x (y + 1)) playership g
           l = level g
+
+updateScore :: Level -> Int -> Enemies -> Enemies -> Int
+updateScore lev score olde newe = do
+                                let old_el = enemyList olde
+                                let old_ae = attackEnemy olde
+                                let new_el = enemyList newe
+                                let new_ae = attackEnemy newe
+                                let sum = (length old_el) - (length new_el) + (length old_ae) - (length new_ae)
+                                score + sum * (20 + (10 * (levelNumber lev)) )
+
