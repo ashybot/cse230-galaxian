@@ -53,7 +53,6 @@ handleEvent (VtyEvent (V.EvKey V.KLeft []))       = do
 handleEvent (VtyEvent (V.EvKey (V.KChar 'a') [])) = do
                                                       g <- get
                                                       put $ move (subtract 1) g   
--- handleEvent g (VtyEvent (V.EvKey (V.KChar ' ') [])) = continue $ shoot g  
 handleEvent (VtyEvent (V.EvKey (V.KChar ' ') [])) = do
                                                       g <- get 
                                                       put $ shoot g                                                                                                                                                                
@@ -63,27 +62,15 @@ handleEvent _                                     = do
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _ esh) = do
+step g@(Game li l s d p sh _ esh cst) = do
   let shotsNew = updateShots g -- update Shots, 
-  -- Game li l s d p shotsNew e
-
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-
-  -- let eNew = updateEnemy g shotsNew -- update aliens
-
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-  -- let tmp_ = handleShots (Game li l s d p sh eNew) shotsNew -- handle out of bound shots
-
-    
   let eNew = updateEnemy g -- update aliens
   let eNew' = updateEnemyAfterShots eNew shotsNew
-  -- let eNew = updateEnemy g shotsNew -- update aliens
-
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-  let tmp_ = handleShots (Game li l s d p sh eNew esh) shotsNew -- handle out of bound shots
+  let shotsNew' = handleShots (Game li l s d p sh eNew esh cst) shotsNew -- handle out of bound shots
+  Game li l s d p shotsNew' eNew' esh (cst+1)
 
 
-  -- Game li l s d p shotsNew eNew'
-  -- Game li l s d p tmp_ eNew
-  Game li l s d p tmp_ eNew' esh
+  -- start game at 4.
+  -- every time i shoot (only can shoot when >=4), set it to 0.
+  -- and the tick goes up by 1 everytime.
 
