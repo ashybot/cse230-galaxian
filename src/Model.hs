@@ -114,8 +114,6 @@ updateEnemyAfterShots es@(Enemies el _ _ ae sf) shotsNew = if null (el++ae)
                                       let el_ = moveAndKill (enemyList es) shotsNew
                                       -- let ae_ = moveAndKill (attackEnemy es) shotsNew
                                       let ae_ = moveAndKill2 (attackEnemy es) shotsNew
-
-
                                       let es' = Enemies el_ (countdown es) (origPosition es) ae_ sf
                                       es'
 

@@ -66,11 +66,10 @@ step g@(Game li l s d p sh _ esh cst) = do
   let shotsNew = updateShots g -- update Shots, 
   let eNew = updateEnemy g -- update aliens
   let eNew' = updateEnemyAfterShots eNew shotsNew
+
+  -- 4 update score. we can just compare length of eNew and eNew'
+  let newscore = updateScore l s eNew eNew' -- level score olde newe
+
   let shotsNew' = handleShots (Game li l s d p sh eNew esh cst) shotsNew -- handle out of bound shots
-  Game li l s d p shotsNew' eNew' esh (cst+1)
-
-
-  -- start game at 4.
-  -- every time i shoot (only can shoot when >=4), set it to 0.
-  -- and the tick goes up by 1 everytime.
+  Game li l newscore d p shotsNew' eNew' esh (cst+1)
 
