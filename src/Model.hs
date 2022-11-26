@@ -33,14 +33,14 @@ data Direction = L | R | U | D
 
 -- | Initialize the game with the default values
 game ::Int -> Int -> Level -> Game
-game s li l = Game
+game s li l@(Level _ af sf) = Game
         { lives       = li
         , level       = l
         , score       = s
         , dead        = False
         , playership  = V2 (width `div` 2) 0
         , shots       = []
-        , enemies     = initEnemies 10 10 L
+        , enemies     = initEnemies 10 af L sf
         }
 
 -- countdown   : Steps to the next attack - specified by game level
@@ -51,6 +51,7 @@ data Enemies = Enemies {
   , countdown :: Int
   , origPosition :: [Enemy]
   , attackEnemy  :: [Enemy]
+  , attackFreq   :: Int
 } deriving (Show, Eq)
 
 -- | Enemy
@@ -75,8 +76,8 @@ instance Ord Enemy where
 -- n: Number of enemies 
 -- f: Countdown of next shooting with default set to game$level$attackFrequency
 -- d: Direction
-initEnemies:: Int -> Int -> Direction -> Enemies
-initEnemies n f d = Enemies (initEnemyList n d) f [] []
+initEnemies:: Int -> Int -> Direction -> Int -> Enemies
+initEnemies n f d sf = Enemies (initEnemyList n d) f [] [] sf
 initEnemyList:: Int -> Direction -> [Enemy]
 initEnemyList n d = [E (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) enemyHeight) False d | x <- [1..n]]
 
@@ -88,7 +89,7 @@ setAttackFrequency = (100-)
 -- updateEnemy :: Game -> Enemies
 updateEnemy :: Game -> Enemies
 -- updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
-updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae)) = if null (el++ae)
+updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae sf)) = if null (el++ae)
 
                                           then error "No Enemy!"
                                           else do 
@@ -101,7 +102,7 @@ updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae)) = if nu
                                             let op' = updateEnemyMove op (el++op)
                                             let el' = updateEnemyMove el (el++op)
                                             -- pick new attack enemy
-                                            let es' = pickNewAttackEnemy (Enemies el' f' op' ae)
+                                            let es' = pickNewAttackEnemy (Enemies el' f' op' ae sf)
                                             -- attack enemy moves
                                             let es''= updateAttackMove px es' 
                                             -- return finished enemy
@@ -113,7 +114,7 @@ updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae)) = if nu
 
                                             -- returnFinishedAttack es'''
 updateEnemyAfterShots :: Enemies -> [Coord] -> Enemies
-updateEnemyAfterShots es@(Enemies el _ _ ae) shotsNew = if null (el++ae)
+updateEnemyAfterShots es@(Enemies el _ _ ae sf) shotsNew = if null (el++ae)
                                     then error "No Enemy!"
                                     else do 
                                       let el_ = moveAndKill (enemyList es) shotsNew
@@ -121,7 +122,7 @@ updateEnemyAfterShots es@(Enemies el _ _ ae) shotsNew = if null (el++ae)
                                       let ae_ = moveAndKill2 (attackEnemy es) shotsNew
 
 
-                                      let es' = Enemies el_ (countdown es) (origPosition es) ae_
+                                      let es' = Enemies el_ (countdown es) (origPosition es) ae_ sf
                                       es'
 
 
@@ -147,24 +148,24 @@ moveAndKill2 a s = [x | x <- a', True /= edead x] -- remove dead aliens
 
 -- Pick new attack enemy
 pickNewAttackEnemy :: Enemies -> Enemies
-pickNewAttackEnemy es@(Enemies el f op ae)
+pickNewAttackEnemy es@(Enemies el f op ae sf)
   | f /= 0 || null el = es
   | otherwise = do 
       let e_ = head el
       let el'= tail el
       let op'= e_:op 
       let ae' = e_:ae
-      Enemies el' f op' ae'
+      Enemies el' f op' ae' sf
 
 -- Attack enemies move
 updateAttackMove :: Int -> Enemies -> Enemies
-updateAttackMove px es@(Enemies _ f _ ae)
+updateAttackMove px es@(Enemies _ f _ ae sf)
   = do 
     -- put back returning attack enemy that arrives original patch
     let idx = tryGetAttackEnemyByY ae 0 (enemyHeight+1)  
-    let (Enemies el' _ op' ae') = putBackAttackEnemy idx es
+    let (Enemies el' _ op' ae' _) = putBackAttackEnemy idx es
     -- update movement
-    Enemies el' f op' (map (horizontalMove . moveEnemy D) ae')
+    Enemies el' f op' (map (horizontalMove . moveEnemy D) ae') sf
     where 
       horizontalMove e@(E (V2 ex ey) _ _) = do 
         -- on the way returning to original position
@@ -179,14 +180,14 @@ updateAttackMove px es@(Enemies _ f _ ae)
   
 -- Put back attack enemy to original position
 putBackAttackEnemy :: Int -> Enemies -> Enemies
-putBackAttackEnemy idx es@(Enemies el f op ae)
+putBackAttackEnemy idx es@(Enemies el f op ae sf)
   = if idx == -1 then es 
       else do
         let op_ = op!!idx
         let el' = el ++ [op_]
         let ae' = removeEnemy idx ae 
         let op' = removeEnemy idx op 
-        Enemies el' f op' ae'
+        Enemies el' f op' ae' sf
 
 -- Return the index of attack enemy at the bottom else -1
 tryGetAttackEnemyByY :: [Enemy] -> Int -> Int -> Int
@@ -204,7 +205,7 @@ removeEnemy idx el = lhs ++ rhs
 
 -- Return the bottom-reached enemy back to the top
 returnFinishedAttack :: Enemies -> Enemies
-returnFinishedAttack es@(Enemies el f op ae)
+returnFinishedAttack es@(Enemies el f op ae sf)
   = do
     let idx = tryGetAttackEnemyByY ae 0 1
     if idx == -1 
@@ -212,7 +213,7 @@ returnFinishedAttack es@(Enemies el f op ae)
       else do 
         let (E (V2 x _) e d) = ae!!idx
         let ae' = E (V2 x height) e d:ae
-        Enemies el f op ae'
+        Enemies el f op ae' sf
 
 
 
@@ -244,7 +245,7 @@ moveEnemy D (E (V2 x y) e d) = E (V2 x (y-1)) e d
 moveEnemy U (E (V2 x y) e d) = E (V2 x (y+1)) e d
 
 enemyCoords:: Game -> [Coord]
-enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae)) = map coord (el++ae)
+enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _)) = map coord (el++ae)
 
 -------------------------------------------------------------------------------------------------------------------------------------
 -- -- TODO handle shots
@@ -280,10 +281,10 @@ getCoord3 :: Enemy -> Coord
 getCoord3 (E (V2 x y) _ _) = V2 x (y-1)
 
 getEnemyLocationList :: Game -> [Coord]
-getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el _ _ _)) = map getCoord el
+getEnemyLocationList (Game _ _ _ _ _ _ (Enemies el _ _ _ _)) = map getCoord el
 
 getAEnemyLocationList :: Game -> [Coord]
-getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies _  _ _ ae)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
+getAEnemyLocationList (Game _ _ _ _ _ _ (Enemies _  _ _ ae _)) = (map getCoord ae) ++ (map getCoord2 ae) ++ (map getCoord3 ae)
 
 -- Enemies {
 --     enemyList :: [Enemy]
