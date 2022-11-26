@@ -40,7 +40,7 @@ game s li l@(Level _ af sf) = Game
         , score        = s
         , dead         = False
         , playership   = V2 (width `div` 2) 0
-        , playerShots        = []
+        , playerShots  = []
         , enemies      = initEnemies 10 af L sf
         , enemiesShots = []
         }
@@ -208,8 +208,8 @@ tryGetAttackEnemyByY ((E (V2 _ y) _ _): as) idx y_val
 
 -- Remove enemy from list by index 
 removeEnemy :: Int -> [Enemy] -> [Enemy]
-removeEnemy idx el = lhs ++ rhs
-  where (lhs, _ :rhs) = splitAt idx el
+removeEnemy idx l = lhs ++ rhs
+  where (lhs, _ :rhs) = splitAt idx l
 
 -- Return the bottom-reached enemy back to the top
 returnFinishedAttack :: Enemies -> Enemies
@@ -329,7 +329,7 @@ initGame = do
             return $game 0 3 l
 
 getLevel :: Int -> Level
-getLevel n = Level {levelNumber = n, attackFrequency = 30 - 5*n, lShots = 6 - n}
+getLevel n = Level {levelNumber = n, attackFrequency = 30 - 5*n, lShots = 2}
 
 -- Initialize screen size
 height, width :: Int
