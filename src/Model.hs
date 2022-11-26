@@ -84,28 +84,26 @@ initEnemies n f d sf = Enemies (initEnemyList n d) f [] [] sf
 initEnemyList:: Int -> Direction -> [Enemy]
 initEnemyList n d = [E (V2 (((width `div` 2) + ((n*2) `div` 2)) - (x*2)) enemyHeight) False d | x <- [1..n]]
 
-setAttackFrequency :: Int -> Int 
-setAttackFrequency = (100-)
-
 -- TODO: 1. Shoot and being shot.
 --       2. Attack frequently
 -- updateEnemy :: Game -> Enemies
 updateEnemy :: Game -> Enemies
 -- updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ es@(Enemies el f op ae)) = if null (el++ae)
-updateEnemy (Game _ (Level _ af _) _ _ (V2 px _) _ (Enemies el f op ae sf) _) = if null (el++ae)
+updateEnemy (Game _ (Level _ af sf) _ _ (V2 px _) _ (Enemies el f op ae s) _) = if null (el++ae)
 
                                           then error "No Enemy!"
                                           else do 
                                             
                                             -- let el_ = moveAndKill el shotsNew
 
-
+                                            -- update both frequency counter
                                             let f'  = updateFrequency f af
+                                            let s'  = updateFrequency s sf
                                             -- update patched positions 
                                             let op' = updateEnemyMove op (el++op)
                                             let el' = updateEnemyMove el (el++op)
                                             -- pick new attack enemy
-                                            let es' = pickNewAttackEnemy (Enemies el' f' op' ae sf)
+                                            let es' = pickNewAttackEnemy (Enemies el' f' op' ae s')
                                             -- attack enemy moves
                                             let es''= updateAttackMove px es' 
                                             -- return finished enemy
@@ -128,6 +126,13 @@ updateEnemyAfterShots es@(Enemies el _ _ ae sf) shotsNew = if null (el++ae)
                                       let es' = Enemies el_ (countdown es) (origPosition es) ae_ sf
                                       es'
 
+
+-- attack enemies shot
+attackEnemyNewShot :: Game -> [Coord] 
+attackEnemyNewShot (Game _ _ _ _ _ _ (Enemies _ _ _ ae s) esh)
+  = do 
+    if s /= 0 then esh 
+      else esh ++ (map getCoord3 ae)
 
 -- coord :: Coord
 --     , edead :: Bool
@@ -271,11 +276,11 @@ enemyCoords (Game _ _ _ _ _ _ (Enemies el _ _ ae _) _ ) = map coord (el++ae)
 -- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
 --       where a' = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a  -- check for hits
 -------------------------------------------------------------------------------------------------------------------------------------
-updateShots :: Game -> Direction -> [Coord]
-updateShots (Game _ _ _ _ _ s _ _) U = map (\(V2 x y) -> (V2 x (y+1))) s
-updateShots (Game _ _ _ _ _ s _ _) D = map (\(V2 x y) -> (V2 x (y-1))) s
-updateShots (Game _ _ _ _ _ s _ _) L = map (\(V2 x y) -> (V2 (x-1) y)) s
-updateShots (Game _ _ _ _ _ s _ _) R = map (\(V2 x y) -> (V2 (x+1) y)) s
+updateShots :: [Coord] -> Direction -> [Coord]
+updateShots s U = map (\(V2 x y) -> (V2 x (y+1))) s 
+updateShots s D = map (\(V2 x y) -> (V2 x (y-1))) s 
+updateShots s L = map (\(V2 x y) -> (V2 (x-1) y)) s 
+updateShots s R = map (\(V2 x y) -> (V2 (x+1) y)) s 
 
 getCoord :: Enemy -> Coord
 getCoord (E c _ _) = c
@@ -314,7 +319,7 @@ handleShots g s =  do
       let s1 = [x | x <- s, not (x `elem` getEnemyLocationList g) && not (x `elem` getAEnemyLocationList g)] -- remove shots which hit
 
       -- [x | x <- s1, x ^._y <= height] -- remove shots which are out
-      [(V2 x y) | (V2 x y)  <- s1, y <= height] -- remove shots which are out
+      [(V2 x y) | (V2 x y)  <- s1, y <= height && y >= 0] -- remove shots which are out
 
 
 
