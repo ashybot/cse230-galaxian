@@ -13,8 +13,8 @@ move f g  = if dead g then g
 -- | Add new shot from the canon to the game
 shoot :: Game -> Game
 shoot g = if dead g || length s >= lShots l then g
-  else g {shots = n:s }
-    where s = shots g
+  else g {playerShots = n:s }
+    where s = playerShots g
           n = fmap (\(V2 x y)  -> V2 x (y + 1)) playership g
           l = level g
 
