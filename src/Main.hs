@@ -65,19 +65,24 @@ handleEvent _                                     = do
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _ esh cst) = if 
+step g@(Game li l s d p sh _ _ cst) = if 
                                           dead g then g
                                         else 
                                           do
-  let shotsNew = updateShots g -- update Shots, 
+  -- add new enemy shots
+  let esh' = attackEnemyNewShot g
+  -- update enemy shots
+  let esh''= updateShots esh' D
+   -- update player shots
+  let playerShotsNew = updateShots sh U
   let eNew = updateEnemy g -- update aliens
-  let eNew' = updateEnemyAfterShots eNew shotsNew
+  let eNew' = updateEnemyAfterShots eNew playerShotsNew
 
   -- 4 update score. we can just compare length of eNew and eNew'
   let newscore = updateScore l s eNew eNew' -- level score olde newe
 
-  let shotsNew' = handleShots (Game li l s d p sh eNew esh cst) shotsNew -- handle out of bound shots
+  let shotsNew' = handleShots (Game li l s d p sh eNew esh'' cst) playerShotsNew -- handle out of bound shots
   
   let newd = li == 0
-  Game li l newscore newd p shotsNew' eNew' esh (cst+1)
+  Game li l newscore newd p shotsNew' eNew' esh'' (cst+1)
 
