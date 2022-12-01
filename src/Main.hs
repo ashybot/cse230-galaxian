@@ -53,42 +53,36 @@ handleEvent (VtyEvent (V.EvKey V.KLeft []))       = do
 handleEvent (VtyEvent (V.EvKey (V.KChar 'a') [])) = do
                                                       g <- get
                                                       put $ move (subtract 1) g   
--- handleEvent g (VtyEvent (V.EvKey (V.KChar ' ') [])) = continue $ shoot g  
 handleEvent (VtyEvent (V.EvKey (V.KChar ' ') [])) = do
                                                       g <- get 
-                                                      put $ shoot g                                                                                                                                                                
+                                                      put $ shoot g 
+handleEvent (VtyEvent (V.EvKey (V.KChar 'r') [])) = do
+                                                      g <- get 
+                                                      put $ restart g                                                                                                                                                                                                                 
 handleEvent _                                     = do
                                                       g <- get
                                                       put g
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _ esh) = do
+step g@(Game li l s d p sh _ _ cst) = if 
+                                          dead g then g
+                                        else 
+                                          do
   -- add new enemy shots
   let esh' = attackEnemyNewShot g
   -- update enemy shots
   let esh''= updateShots esh' D
    -- update player shots
   let playerShotsNew = updateShots sh U
-  -- Game li l s d p shotsNew e
-
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-
-  -- let eNew = updateEnemy g shotsNew -- update aliens
-
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-  -- let tmp_ = handleShots (Game li l s d p sh eNew) shotsNew -- handle out of bound shots
-
-    
   let eNew = updateEnemy g -- update aliens
   let eNew' = updateEnemyAfterShots eNew playerShotsNew
-  -- let eNew = updateEnemy g shotsNew -- update aliens
 
-  -- let tmp_ = handleShots g shotsNew -- handle out of bound shots
-  let tmp_ = handleShots (Game li l s d p sh eNew esh'') playerShotsNew -- handle out of bound shots
+  -- 4 update score. we can just compare length of eNew and eNew'
+  let newscore = updateScore l s eNew eNew' -- level score olde newe
 
-
-  -- Game li l s d p shotsNew eNew'
-  -- Game li l s d p tmp_ eNew
-  Game li l s d p tmp_ eNew' esh''
+  let shotsNew' = handleShots (Game li l s d p sh eNew esh'' cst) playerShotsNew -- handle out of bound shots
+  
+  let newd = li == 0
+  Game li l newscore newd p shotsNew' eNew' esh'' (cst+1)
 
