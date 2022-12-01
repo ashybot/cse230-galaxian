@@ -10,7 +10,11 @@ move f g  = if dead g then g
             else g {playership = V2 x $playership g ^._y }
                 where x = f(playership g ^._x) `mod` width
 
--- | Add new shot from the canon to the game
+-- | Restart the game
+restart :: Game -> Game
+restart _ = game 0 3 (getLevel 0)
+
+-- | Add new shot from the spaceship to the game
 shoot :: Game -> Game
 -- shoot g = if dead g || length s >= lShots l then g
 -- shoot g = if dead g || length s >= lShots l || (curstep g) `mod` 4 /= 0 then g

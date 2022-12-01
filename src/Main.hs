@@ -55,14 +55,20 @@ handleEvent (VtyEvent (V.EvKey (V.KChar 'a') [])) = do
                                                       put $ move (subtract 1) g   
 handleEvent (VtyEvent (V.EvKey (V.KChar ' ') [])) = do
                                                       g <- get 
-                                                      put $ shoot g                                                                                                                                                                
+                                                      put $ shoot g 
+handleEvent (VtyEvent (V.EvKey (V.KChar 'r') [])) = do
+                                                      g <- get 
+                                                      put $ restart g                                                                                                                                                                                                                 
 handleEvent _                                     = do
                                                       g <- get
                                                       put g
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _ esh cst) = do
+step g@(Game li l s d p sh _ esh cst) = if 
+                                          dead g then g
+                                        else 
+                                          do
   let shotsNew = updateShots g -- update Shots, 
   let eNew = updateEnemy g -- update aliens
   let eNew' = updateEnemyAfterShots eNew shotsNew
@@ -71,5 +77,7 @@ step g@(Game li l s d p sh _ esh cst) = do
   let newscore = updateScore l s eNew eNew' -- level score olde newe
 
   let shotsNew' = handleShots (Game li l s d p sh eNew esh cst) shotsNew -- handle out of bound shots
-  Game li l newscore d p shotsNew' eNew' esh (cst+1)
+  
+  let newd = li == 0
+  Game li l newscore newd p shotsNew' eNew' esh (cst+1)
 
