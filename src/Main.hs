@@ -65,7 +65,7 @@ handleEvent _                                     = do
 
 -- | Update the UI as events are handled (ex: Galaxians move, shots fired)
 step :: Game -> Game
-step g@(Game li l s d p sh _ _ cst) = if 
+step g@(Game li l s d p sh e esh cst) = if 
                                           dead g then g
                                         else 
                                           do
@@ -80,9 +80,10 @@ step g@(Game li l s d p sh _ _ cst) = if
 
   -- 4 update score. we can just compare length of eNew and eNew'
   let newscore = updateScore l s eNew eNew' -- level score olde newe
+  let newLives = updateLives g p esh (attackEnemy e)
 
   let shotsNew' = handleShots (Game li l s d p sh eNew esh'' cst) playerShotsNew -- handle out of bound shots
   
   let newd = li == 0
-  Game li l newscore newd p shotsNew' eNew' esh'' (cst+1)
+  Game newLives l newscore newd p shotsNew' eNew' esh'' (cst+1)
 
