@@ -36,3 +36,7 @@ updateScore lev score olde newe = do
                                 let sum = (length old_el) - (length new_el) + (length old_ae) - (length new_ae)
                                 score + sum * (20 + (10 * (levelNumber lev)) )
 
+updateLives :: Game -> Coord -> [Coord] -> [Enemy] -> Int
+updateLives g player enemyLasers listEnemies = if (player `elem` enemyLasers) || (player `elem` map coord listEnemies)
+                                                then lives g - 1
+                                                else lives g
