@@ -80,7 +80,7 @@ step g@(Game li l s d p sh e esh cst) = if
 
   -- 4 update score. we can just compare length of eNew and eNew'
   let newscore = updateScore l s eNew eNew' -- level score olde newe
-  let newLives = updateLives g p esh (enemyList e)
+  let newLives = updateLives g p esh (attackEnemy e)
 
   let shotsNew' = handleShots (Game li l s d p sh eNew esh'' cst) playerShotsNew -- handle out of bound shots
   

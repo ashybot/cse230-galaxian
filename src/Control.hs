@@ -28,15 +28,15 @@ shoot g = if dead g || length s >= lShots l || (curstep g) < 8 then g
           l = level g
 
 updateScore :: Level -> Int -> Enemies -> Enemies -> Int
-updateScore lev score olde newe = do
+updateScore lev score1 olde newe = do
                                 let old_el = enemyList olde
                                 let old_ae = attackEnemy olde
                                 let new_el = enemyList newe
                                 let new_ae = attackEnemy newe
-                                let sum = (length old_el) - (length new_el) + (length old_ae) - (length new_ae)
-                                score + sum * (20 + (10 * (levelNumber lev)) )
+                                let sum1 = (length old_el) - (length new_el) + (length old_ae) - (length new_ae)
+                                score1 + sum1 * (20 + (10 * (levelNumber lev)) )
 
 updateLives :: Game -> Coord -> [Coord] -> [Enemy] -> Int
-updateLives g player enemyLasers listEnemies = if (player `elem` enemyLasers) || (player `elem` map coord listEnemies)
+updateLives g player enemyLasers listAttackingEnemies = if (player `elem` enemyLasers) || (player `elem` map coord listAttackingEnemies)
                                                 then lives g - 1
                                                 else lives g
