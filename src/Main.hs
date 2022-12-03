@@ -84,6 +84,11 @@ step g@(Game li l s d p sh e esh cst) = if
 
   let shotsNew' = handleShots (Game li l s d p sh eNew esh'' cst) playerShotsNew -- handle out of bound shots
   
-  let newd = li == 0
-  Game newLives l newscore newd p shotsNew' eNew' esh'' (cst+1)
+  let newd = li ==0 
+  let checkLevelUp = null (enemyList eNew') && (length (attackEnemy eNew') < length (attackEnemy e))
+  if checkLevelUp 
+    then
+      game (score g) 3 (getLevel (levelNumber (level g) + 1))
+    else
+      Game newLives l newscore newd p shotsNew' eNew' esh'' (cst+1)
 
