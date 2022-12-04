@@ -30,7 +30,8 @@ drawScore n g = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str ("Level " ++ show (levelNumber (level g))))
   $ C.hCenter
   $ padAll 1
-  $ (str "Score: " <+> str (show n)) <=> (str "Lives: " <+> str (show (lives g)))
+  $ (str "Score: " <+> str (show n)) <=> (str "Lives: " <+> str (show li))
+    where li = if lives g > 0 then lives g else 0
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver isDead =
