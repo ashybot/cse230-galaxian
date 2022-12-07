@@ -1,8 +1,6 @@
 module Main (main) where
 import Model
 import Control
-
-import Test.Tasty ( defaultMain, testGroup, TestTree )
 import Test.Tasty.HUnit ( testCase, (@?=) )
 import Linear.V2 (V2(..))
 import Test.QuickCheck 
@@ -17,35 +15,65 @@ main = do {quickCheck prop_e; defaultMain unitTests}
         -- quickCheck prop_e
 
 unitTests:: TestTree
-unitTests = testGroup "Tests" [updateLivesTest]
+unitTests = testGroup "Tests" [updateLivesTest, killEnemyTest, updateScoreTest]
 
 updateLivesTest:: TestTree
 updateLivesTest = testGroup "Tests to check if lives are decremented appropriately"
   [
     testCase "Playership hits enemy but not laser" $
-      updateLives genStaticGame (V2 (width `div` 2) 0) [] [(genEnemyWithCoord (width `div` 2) 0), (genEnemyWithCoord 100 5)] @?= 2,
+      updateLives (genStaticGame 0) (V2 (width `div` 2) 0) [] [(genEnemyWithCoord (width `div` 2) 0), (genEnemyWithCoord 100 5)] @?= 2,
 
     testCase "Playership hits enemy's laser but not enemy" $
-      updateLives genStaticGame (V2 (width `div` 2) 0) [(V2 (width `div` 2) 0)] [(genEnemyWithCoord 100 5)] @?= 2,
+      updateLives (genStaticGame 0) (V2 (width `div` 2) 0) [(V2 (width `div` 2) 0)] [(genEnemyWithCoord 100 5)] @?= 2,
 
-    testCase "Ensure no double penalty if player hits enemy and laser at the same time" $
-      updateLives genStaticGame (V2 (width `div` 2) 0) [(V2 (width `div` 2) 0)] [(genEnemyWithCoord (width `div` 2) 0)] @?= 2,
+    testCase "No double penalty test with laser and enemy hitting player" $
+      updateLives (genStaticGame 0) (V2 (width `div` 2) 0) [(V2 (width `div` 2) 0)] [(genEnemyWithCoord (width `div` 2) 0)] @?= 2,
+    
+    testCase "No double penalty test with 2 lasers hitting player" $
+      updateLives (genStaticGame 0) (V2 (width `div` 2) 0) [(V2 (width `div` 2) 0), (V2 (width `div` 2) 0)] [] @?= 2,
 
     testCase "Playership is not hit by anything" $
-      updateLives genStaticGame (V2 (width `div` 2) 0) [] [] @?= 3
+      updateLives (genStaticGame 0) (V2 (width `div` 2) 0) [] [] @?= 3
   ]
+
+killEnemyTest :: TestTree
+killEnemyTest = testGroup "Tests to check if enemies die appropriately"
+  [
+    testCase "Non-attacking enemy collides with player laser" $
+      moveAndKill [(genEnemyWithCoord 10 10), (genEnemyWithCoord 20 20)] [(V2 10 10)] @?= [genEnemyWithCoord 20 20],
+  
+    testCase "Attacking enemy collides with player laser" $
+      moveAndKill2 [(genEnemyWithCoord 100 100)] [(V2 100 100)] @?= [],
+    
+    testCase "Enemy does not collide with any player lasers" $
+       moveAndKill [(genEnemyWithCoord 20 20)] [(V2 10 10), (V2 30 30), (V2 100 100)] @?= [genEnemyWithCoord 20 20]
+  ]
+
+updateScoreTest :: TestTree
+updateScoreTest = testGroup "Tests to check if player score updates correctly" $
+  [
+    testCase "Update score after killing 3 enemies on level 3, starting from score 100" $
+      updateScore (getLevel 3) 100 (genTestEnemies [(genEnemyWithCoord 10 10), (genEnemyWithCoord 20 20), (genEnemyWithCoord 100 100)]) (genTestEnemies []) @?= 250,
+    
+    testCase "Update score after killing 1 enemy on level 0, starting from score 0" $ 
+      updateScore (getLevel 0) 0 (genTestEnemies [(genEnemyWithCoord 10 10), (genEnemyWithCoord 20 20)]) (genTestEnemies [(genEnemyWithCoord 20 20)]) @?= 20,
+    
+    testCase "Update score after killing 0 enemies on level 5, starting from score 1000" $
+      updateScore (getLevel 5) 1000 (genTestEnemies [(genEnemyWithCoord 20 20)]) (genTestEnemies [(genEnemyWithCoord 20 20)]) @?= 1000
+  ]
+
+genTestEnemies :: [Enemy] -> Enemies
+genTestEnemies listEnemies = Enemies listEnemies 0 [] [] 0
 
 -- Generate Enemy at a specific coordinate (V2 x y)
 genEnemyWithCoord :: Int -> Int -> Enemy
 genEnemyWithCoord x y = E (V2 x y) False R
 
 -- Generate Game - specific to make testing easier
--- For updateLivesTest we only need to utilize the first argument (# of lives) so this will be fine to leave the other parts empty
-genStaticGame :: Game
-genStaticGame =  Game 3 (getLevel 0) 0 False (V2 (width `div` 2) 0) [] testEnemies [] 0
+genStaticGame :: Int -> Game
+genStaticGame levelNum =  Game 3 (getLevel levelNum) 0 False (V2 (width `div` 2) 0) [] testEnemies [] 0
                where 
                 testEnemies = Enemies [] 0 [] [] 0
-
 newEne :: Game -> Enemies
 newEne g = updateEnemyAfterShots (enemies g) (playerShots g)
 
@@ -67,6 +95,7 @@ zip' (x:xs) (y:ys) = (x,y):zip' xs ys
 
 getMatch :: Ord a => [a] -> [a] -> Int
 getMatch l r = getMatch' (sort l) (sort r)
+getMatch' :: Ord a => [a] -> [a] -> Int
 getMatch' [] _ = 0
 getMatch' _ [] = 0
 getMatch' l@(a: as) r@(b: bs) | a < b = getMatch' as r
@@ -76,17 +105,8 @@ getMatch' l@(a: as) r@(b: bs) | a < b = getMatch' as r
 checkl :: [Coord] -> [Coord] -> [Coord] -> Bool
 checkl s o n = ((length o) - (getMatch s o) == length n)
 
-
-
-
-
 prop_e :: Property
 prop_e = forAll genGame (shotAreRemoved)
-
-
-
-prop_what :: Property
-prop_what = property (1==1)
 
 -- Generate Coord with given maximum x and y
 genCoord :: Int -> Int -> Gen Coord
@@ -168,7 +188,7 @@ genAliveEnemies = do
 --   cs  <- abs (arbitrary :: Int)
 --   return (Game li l s d psh pSh es eSh cs)
 
--- genGame :: Gen Game
+genGame :: Gen Game
 genGame = do
   -- li  <- chooseInt(0, 3)
   let li = 3
