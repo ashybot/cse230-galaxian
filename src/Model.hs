@@ -133,7 +133,7 @@ attackEnemyNewShot (Game _ _ _ _ _ _ (Enemies _ _ _ ae s) esh _)
 moveAndKill :: [Enemy] -> [Coord] -> [Enemy]
 -- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
 moveAndKill a s = [x | x <- a', True /= edead x] -- remove dead aliens 
-      where a' = map (\(E coord edead dir) -> if coord `elem` s then (E coord True dir) else (E coord edead dir)) a  -- check for hits
+      where a' = map (\(E coord' edead' dir) -> if coord' `elem` s then (E coord' True dir) else (E coord' edead' dir)) a  -- check for hits
 
 
 getC :: [Coord] -> [Coord]
@@ -142,7 +142,7 @@ getC c = c ++ (map(\(V2 x y) -> (V2 x (y+1))) c) ++ (map(\(V2 x y) -> (V2 x (y-1
 moveAndKill2 :: [Enemy] -> [Coord] -> [Enemy]
 -- moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
 moveAndKill2 a s = [x | x <- a', True /= edead x] -- remove dead aliens 
-      where a' = map (\(E coord edead dir) -> if coord `elem` (getC s) then (E coord True dir) else (E coord edead dir)) a  -- check for hits
+      where a' = map (\(E coord' edead' dir) -> if coord' `elem` (getC s) then (E coord' True dir) else (E coord' edead' dir)) a  -- check for hits
 
 
       -- where a' = map (\(E (V2 x_ y_) edead dir) -> if (V2 x_ (y)) `elem` s then (E (V2 x_ y_) True dir) else (E (V2 x_ y_) edead dir)) a  -- check for hits
