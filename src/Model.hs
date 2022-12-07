@@ -287,7 +287,9 @@ getLevel n = Level {levelNumber = n, attackFrequency = 30 - 5*n, lShots = 3}
 
 -- Initialize screen size
 height, width :: Int
-height = 15
+-- height = 15
+-- width = 35
+height = 20
 width = 35
 
 -- Initialize enemy position

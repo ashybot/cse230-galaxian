@@ -71,6 +71,7 @@ attributeMap = attrMap V.defAttr
     (enemyAttr, fg V.red `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
+  
 
 -- | Attribute definitions
 enemyShotAttr, playerShotAttr, gameOverAttr, emptyAttr, playershipAttr, enemyAttr :: AttrName
