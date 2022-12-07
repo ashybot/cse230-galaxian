@@ -12,15 +12,10 @@ import Data.List
 
 main :: IO ()
 -- main = defaultMain unitTests
-main = do 
+main = do {quickCheck prop_e; defaultMain unitTests}
         -- let a = 3
---         -- defaultMain unitTests
-        quickCheck prop_e
-
-
--- main = runTests 
---   [ testShotEnemies
---   ]
+        -- defaultMain unitTests
+        -- quickCheck prop_e
 
 unitTests:: TestTree
 unitTests = testGroup "Tests" [updateLivesTest]
