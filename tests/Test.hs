@@ -13,7 +13,6 @@ import Data.List
 main :: IO ()
 -- main = defaultMain unitTests
 main = do {quickCheck prop_e; defaultMain unitTests}
-        -- let a = 3
         -- defaultMain unitTests
         -- quickCheck prop_e
 
@@ -47,17 +46,6 @@ genStaticGame =  Game 3 (getLevel 0) 0 False (V2 (width `div` 2) 0) [] testEnemi
                where 
                 testEnemies = Enemies [] 0 [] [] 0
 
--- test for enemies gone when lazer hits them
--- need to generate game where
-  -- generate enemies
-  -- generate lazers
-  -- generate some lazers position == enemies
-genStaticGame2 :: Gen Game
-genStaticGame2 = do
-                  t_shots <- genShots
-                  t_enemies <- genAliveEnemies
-                  return (Game 3 (getLevel 0) 0 False (V2 (width `div` 2) 0) t_shots t_enemies [] 0)
-
 newEne :: Game -> Enemies
 newEne g = updateEnemyAfterShots (enemies g) (playerShots g)
 
@@ -88,37 +76,14 @@ getMatch' l@(a: as) r@(b: bs) | a < b = getMatch' as r
 checkl :: [Coord] -> [Coord] -> [Coord] -> Bool
 checkl s o n = ((length o) - (getMatch s o) == length n)
 
--- checkl s o n = (length filtered == length n)
---   where 
---     filtered = [x | x <- a', x==False] -- remove dead aliens 
---     a' = map (\(a1,a2) -> if a1==a2 then True else False) (zip' s o)
+
 
 
 
 prop_e :: Property
 prop_e = forAll genGame (shotAreRemoved)
 
--- quickCheck prop_e
 
--- testShotEnemies :: TestTree
--- testShotEnemies sc = testGroup "whatttt"
---   [ 
---     -- testCase "WAAAAAAA" $
---     -- testProperty "what" prop_e
-
---     -- propertyRead prop_e @?= True
---     -- scoreProp sc ("prop_insert_bso"      , prop_e    , 3) 
---     -- testCase "Playership hits enemy but not laser" $
---     --   updateLives genStaticGame (V2 (width `div` 2) 0) [] [(genEnemyWithCoord (width `div` 2) 0), (genEnemyWithCoord 100 5)] @?= 2,
---   ]
-
--- --------------------------------------------------------------------------------
--- scoreProp :: (QC.Testable prop) => Score -> (String, prop, Int) -> TestTree
--- --------------------------------------------------------------------------------
--- scoreProp sc (name, prop, n) = scoreTest' sc (act, (), True, n, name)
---   where
---     act _                    = QC.isSuccess <$> QC.labelledExamplesWithResult args prop
---     args                     = QC.stdArgs { QC.chatty = False, QC.maxSuccess = 100 }
 
 prop_what :: Property
 prop_what = property (1==1)
@@ -202,9 +167,6 @@ genAliveEnemies = do
 --   eSh <- listOf genCoord
 --   cs  <- abs (arbitrary :: Int)
 --   return (Game li l s d psh pSh es eSh cs)
-
--- nonEmptyL :: Gen String
-nonEmptyL = listOf1 (genCoord width height)
 
 -- genGame :: Gen Game
 genGame = do
